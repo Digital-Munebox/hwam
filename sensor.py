@@ -14,7 +14,7 @@ from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
 )
 
-from .const import DOMAIN
+from .const import DOMAIN, PHASE_STATES
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -72,6 +72,9 @@ SENSORS = {
     "phase": {
         "name": "Phase",
         "icon": "mdi:chart-timeline",
+        "device_class": SensorDeviceClass.ENUM,
+        "options": ["Allumage", "Démarrage", "Combustion", "Braises", "Veille"],
+        "value_map": PHASE_STATES,
     },
     "refill_alarm": {
         "name": "Alarme de remplissage",
@@ -138,7 +141,7 @@ class HWAMSensor(CoordinatorEntity, SensorEntity):
         self._sensor_key = sensor_key
         self._config = config
         self._attr_name = config["name"]
-        self._attr_unique_id = f"{entry.entry_id}_{sensor_key}"  # Ajout d’un ID unique
+        self._attr_unique_id = f"{entry.entry_id}_{sensor_key}"
         self._attr_device_info = {
             "identifiers": {(DOMAIN, entry.entry_id)},
             "name": "HWAM Stove",
@@ -148,6 +151,8 @@ class HWAMSensor(CoordinatorEntity, SensorEntity):
         self._attr_state_class = config.get("state_class")
         self._attr_native_unit_of_measurement = config.get("unit")
         self._attr_icon = config.get("icon")
+        if config.get("device_class") == SensorDeviceClass.ENUM:
+            self._attr_options = config.get("options", [])
 
     @property
     def native_value(self) -> Any:
