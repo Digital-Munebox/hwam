@@ -2,7 +2,9 @@
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_SCAN_INTERVAL
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import logging
+
 from .api import HWAMApi
 from .const import DOMAIN, DEFAULT_NAME, DEFAULT_SCAN_INTERVAL
 
@@ -15,7 +17,6 @@ DATA_SCHEMA = vol.Schema({
 })
 
 class HWAMConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for HWAM."""
     VERSION = 1
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
@@ -24,12 +25,11 @@ class HWAMConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
 
         if user_input is not None:
-            session = self.hass.helpers.aiohttp_client.async_get_clientsession()
+            session = async_get_clientsession(self.hass)
             api = HWAMApi(user_input[CONF_HOST], session)
 
             try:
                 if await api.async_validate_connection():
-                    await api.close()
                     return self.async_create_entry(
                         title=user_input[CONF_NAME],
                         data=user_input
@@ -40,8 +40,6 @@ class HWAMConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             except Exception:
                 _LOGGER.exception("Unexpected error")
                 errors["base"] = "unknown"
-            finally:
-                await api.close()
 
         return self.async_show_form(
             step_id="user",
