@@ -3,9 +3,11 @@
         "step": {
             "user": {
                 "title": "Connecter votre poêle HWAM",
-                "description": "Entrez l'adresse IP de votre poêle HWAM",
+                "description": "Configurez votre poêle HWAM",
                 "data": {
-                    "host": "Adresse IP"
+                    "host": "Adresse IP",
+                    "name": "Nom du poêle",
+                    "scan_interval": "Délai d'actualisation (secondes)"
                 }
             }
         },
