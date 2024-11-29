@@ -4,16 +4,16 @@ from homeassistant.const import Platform
 DOMAIN = "hwam"
 PLATFORMS = [Platform.SENSOR]
 
-# Polling interval
-UPDATE_INTERVAL = 15  # seconds
+# Default values
+DEFAULT_NAME = "HWAM Poêle"
+DEFAULT_SCAN_INTERVAL = 15
 
 # Device info
 DEVICE_INFO = {
     "identifiers": {("hwam", "stove")},
-    "name": "HWAM Poêle",
     "manufacturer": "HWAM",
     "model": "IHS Smart Control™",
-    "sw_version": "3.20.0",  # This will be updated dynamically
+    "sw_version": "3.20.0",
 }
 
 # Operation modes
@@ -26,7 +26,7 @@ OPERATION_MODES = {
 PHASE_STATES = {
     1: "Allumage",
     2: "Démarrage",
-    3: "Combustion",
+    3: "Combustion", 
     4: "Braises",
     5: "Veille"
 }
