@@ -120,15 +120,14 @@ async def async_setup_entry(hass, entry, async_add_entities):
     )
 
 class HWAMSensor(CoordinatorEntity, SensorEntity):
-    """Representation of a HWAM sensor."""
-
     def __init__(self, coordinator, sensor_key: str, config: dict, entry):
-        """Initialize the sensor."""
         super().__init__(coordinator)
         self._sensor_key = sensor_key
         self._config = config
-        self._attr_name = config["name"]
+        device_name = entry.data.get("name", "hwam").lower().replace(" ", "_")
+        self._attr_name = f"{device_name} {config['name']}"
         self._attr_unique_id = f"{entry.entry_id}_{sensor_key}"
+        self._attr_entity_id = f"sensor.{device_name}_{sensor_key}"
         self._attr_device_info = {
             "identifiers": {(DOMAIN, entry.entry_id)},
             "name": entry.data.get("name", "HWAM Stove"),
