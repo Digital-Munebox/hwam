@@ -21,3 +21,12 @@ OPERATION_MODES = {
     2: "Éteint",
     9: "En marche",
 }
+
+# Phase states
+PHASE_STATES = {
+    1: "Allumage",
+    2: "Démarrage",
+    3: "Combustion",
+    4: "Braises",
+    5: "Veille"
+}
