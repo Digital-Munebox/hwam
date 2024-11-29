@@ -4,6 +4,7 @@ import aiohttp
 import async_timeout
 import logging
 import json
+from datetime import time
 from typing import Dict, Optional
 
 _LOGGER = logging.getLogger(__name__)
@@ -50,7 +51,19 @@ class HWAMApi:
             _LOGGER.error("Validation failed: %s", err)
             return False
 
-    async def set_night_mode_hours(self, start_time, end_time) -> bool:
+    async def set_night_mode(self, enabled: bool) -> bool:
+        """Enable or disable night mode."""
+        url = f"{self._base_url}/set_night_mode"
+        data = {"enabled": enabled}
+        try:
+            async with async_timeout.timeout(10):
+                async with self._session.post(url, json=data) as response:
+                    return response.status == 200
+        except Exception as err:
+            _LOGGER.error("Error setting night mode: %s", err)
+            return False
+
+    async def set_night_mode_hours(self, start_time: time, end_time: time) -> bool:
         """Set night mode hours."""
         url = f"{self._base_url}/set_night_mode_hours"
         data = {
