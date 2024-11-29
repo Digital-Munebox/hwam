@@ -19,5 +19,45 @@
         "abort": {
             "already_configured": "Ce poêle HWAM est déjà configuré."
         }
+    },
+    "services": {
+        "set_night_mode_hours": {
+            "name": "Configurer les heures du mode nuit",
+            "description": "Configure les heures de début et de fin du mode nuit.",
+            "fields": {
+                "device_id": {
+                    "name": "Poêle",
+                    "description": "Identifiant du poêle."
+                },
+                "start_time": {
+                    "name": "Heure de début",
+                    "description": "Heure de début du mode nuit (HH:MM)."
+                },
+                "end_time": {
+                    "name": "Heure de fin",
+                    "description": "Heure de fin du mode nuit (HH:MM)."
+                }
+            }
+        },
+        "enable_night_mode": {
+            "name": "Activer le mode nuit",
+            "description": "Active le mode nuit du poêle.",
+            "fields": {
+                "device_id": {
+                    "name": "Poêle",
+                    "description": "Identifiant du poêle."
+                }
+            }
+        },
+        "disable_night_mode": {
+            "name": "Désactiver le mode nuit",
+            "description": "Désactive le mode nuit du poêle.",
+            "fields": {
+                "device_id": {
+                    "name": "Poêle",
+                    "description": "Identifiant du poêle."
+                }
+            }
+        }
     }
 }
