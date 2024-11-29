@@ -142,18 +142,28 @@ class HWAMSensor(CoordinatorEntity, SensorEntity):
             self._attr_options = config.get("options", [])
 
     @property
-    def native_value(self) -> Any:
-        """Return the sensor value."""
-        value = self.coordinator.data.get(self._sensor_key)
-        if value is None:
-            return None
-        if "divide_by" in self._config:
-            try:
-                return round(float(value) / self._config["divide_by"], 1)
-            except (ValueError, TypeError):
+        def native_value(self) -> Any:
+            """Return the sensor value."""
+            value = self.coordinator.data.get(self._sensor_key)
+            if value is None:
                 return None
-        if "value_map" in self._config:
-            if isinstance(value, list):
-                return ", ".join(self._config["value_map"].get(v, str(v)) for v in value)
-            return self._config["value_map"].get(value, value)
-        return value
+    
+            # Conversion date pour service_date
+            if self._sensor_key == "service_date" and isinstance(value, str):
+                from datetime import datetime
+                try:
+                    return datetime.strptime(value, "%Y-%m-%d").date()
+                except ValueError:
+                    return None
+    
+            if "divide_by" in self._config:
+                try:
+                    return round(float(value) / self._config["divide_by"], 1)
+                except (ValueError, TypeError):
+                    return None
+            if "value_map" in self._config:
+                if isinstance(value, list):
+                    return ", ".join(self._config["value_map"].get(v, str(v)) for v in value)
+                return self._config["value_map"].get(value, value)
+            return value
+
