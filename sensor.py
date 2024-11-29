@@ -1,6 +1,4 @@
 """Support for HWAM sensors."""
-from datetime import datetime
-import logging
 from typing import Any
 
 from homeassistant.components.sensor import (
@@ -10,13 +8,9 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.const import UnitOfTemperature, PERCENTAGE
 from homeassistant.helpers.entity import EntityCategory
-from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity,
-)
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, PHASE_STATES
-
-_LOGGER = logging.getLogger(__name__)
+from .const import DOMAIN, PHASE_STATES, MAINTENANCE_ALARMS, SAFETY_ALARMS
 
 SENSORS = {
     "stove_temperature": {
@@ -64,6 +58,8 @@ SENSORS = {
     "operation_mode": {
         "name": "Mode de fonctionnement",
         "icon": "mdi:cog",
+        "device_class": SensorDeviceClass.ENUM,
+        "options": ["Éteint", "En marche"],
         "value_map": {
             2: "Éteint",
             9: "En marche",
@@ -73,7 +69,7 @@ SENSORS = {
         "name": "Phase",
         "icon": "mdi:chart-timeline",
         "device_class": SensorDeviceClass.ENUM,
-        "options": ["Allumage", "Démarrage", "Combustion", "Braises", "Veille"],
+        "options": list(PHASE_STATES.values()),
         "value_map": PHASE_STATES,
     },
     "refill_alarm": {
@@ -90,21 +86,13 @@ SENSORS = {
         "name": "Alarmes maintenance",
         "icon": "mdi:alert",
         "entity_category": EntityCategory.DIAGNOSTIC,
+        "value_map": MAINTENANCE_ALARMS,
     },
     "safety_alarms": {
         "name": "Alarmes sécurité",
         "icon": "mdi:alert-circle",
         "entity_category": EntityCategory.DIAGNOSTIC,
-    },
-    "door_open": {
-        "name": "Porte ouverte",
-        "icon": "mdi:door",
-        "device_class": SensorDeviceClass.ENUM,
-        "options": ["Fermée", "Ouverte"],
-        "value_map": {
-            False: "Fermée",
-            True: "Ouverte",
-        },
+        "value_map": SAFETY_ALARMS,
     },
     "service_date": {
         "name": "Date de maintenance",
@@ -131,7 +119,6 @@ async def async_setup_entry(hass, entry, async_add_entities):
         for sensor_key, config in SENSORS.items()
     )
 
-
 class HWAMSensor(CoordinatorEntity, SensorEntity):
     """Representation of a HWAM sensor."""
 
@@ -144,7 +131,7 @@ class HWAMSensor(CoordinatorEntity, SensorEntity):
         self._attr_unique_id = f"{entry.entry_id}_{sensor_key}"
         self._attr_device_info = {
             "identifiers": {(DOMAIN, entry.entry_id)},
-            "name": "HWAM Stove",
+            "name": entry.data.get("name", "HWAM Stove"),
             "manufacturer": "HWAM",
         }
         self._attr_device_class = config.get("device_class")
@@ -166,5 +153,7 @@ class HWAMSensor(CoordinatorEntity, SensorEntity):
             except (ValueError, TypeError):
                 return None
         if "value_map" in self._config:
+            if isinstance(value, list):
+                return ", ".join(self._config["value_map"].get(v, str(v)) for v in value)
             return self._config["value_map"].get(value, value)
         return value
