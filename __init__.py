@@ -10,7 +10,8 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .api import HWAMApi
-from .const import DOMAIN
+from .const import DOMAIN, DEFAULT_SCAN_INTERVAL
+from .services import async_setup_services
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -19,6 +20,7 @@ PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR]
 async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the HWAM component."""
     hass.data[DOMAIN] = {}
+    await async_setup_services(hass)
     return True
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
@@ -31,7 +33,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         _LOGGER,
         name=entry.data.get(CONF_NAME, "hwam"),
         update_method=api.async_get_data,
-        update_interval=timedelta(seconds=entry.data.get(CONF_SCAN_INTERVAL)),
+        update_interval=timedelta(
+            seconds=entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+        ),
     )
 
     await coordinator.async_config_entry_first_refresh()
