@@ -1,0 +1,48 @@
+# Fichier à placer dans custom_components/hwam/services.yaml
+set_night_mode_hours:
+  name: Configurer les heures du mode nuit
+  description: Configure les heures de début et de fin du mode nuit
+  fields:
+    device_id:
+      name: Appareil
+      description: Sélectionnez votre poêle HWAM
+      required: true
+      selector:
+        device:
+          integration: hwam
+    start_time:
+      name: Heure de début
+      description: Heure de début du mode nuit
+      required: true
+      selector:
+        time:
+    end_time:
+      name: Heure de fin
+      description: Heure de fin du mode nuit
+      required: true
+      selector:
+        time:
+
+enable_night_mode:
+  name: Activer le mode nuit
+  description: Active le mode nuit
+  fields:
+    device_id:
+      name: Appareil
+      description: Sélectionnez votre poêle HWAM
+      required: true
+      selector:
+        device:
+          integration: hwam
+
+disable_night_mode:
+  name: Désactiver le mode nuit
+  description: Désactive le mode nuit
+  fields:
+    device_id:
+      name: Appareil
+      description: Sélectionnez votre poêle HWAM
+      required: true
+      selector:
+        device:
+          integration: hwam
