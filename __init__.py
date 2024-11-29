@@ -10,15 +10,16 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .api import HWAMApi
 from .const import DOMAIN, DEFAULT_SCAN_INTERVAL
-from .services import async_setup_services
+from .services import register_services
 
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR]
 
-async def async_setup(hass: HomeAssistant, config: dict) -> bool:
-    """Set up the HWAM integration."""
+async def async_setup(hass: HomeAssistant, _) -> bool:
+    """Set up HWAM integration."""
     hass.data.setdefault(DOMAIN, {})
+    register_services(hass)
     return True
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -43,12 +44,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         "coordinator": coordinator,
     }
 
-    # Initialize services only for the first entry
-    if list(hass.data[DOMAIN].keys())[0] == entry.entry_id:
-        await async_setup_services(hass)
-
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    
     return True
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
