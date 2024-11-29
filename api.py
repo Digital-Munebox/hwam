@@ -25,21 +25,25 @@ class HWAMApi:
         self._base_url = f"http://{host}"
 
     async def async_get_data(self) -> Dict:
-        """Get data from the HWAM stove."""
-        url = f"{self._base_url}/get_stove_data"
-        
-        try:
-            async with async_timeout.timeout(15):
-                async with self._session.get(url) as response:
-                    if response.status == 200:
-                        data = await response.json()
-                        if all(key in data for key in REQUIRED_KEYS):
-                            return data
-                    _LOGGER.error("Failed to get data. Status: %s", response.status)
-                    return {}
-        except Exception as err:
-            _LOGGER.error("Error getting data: %s", err)
-            raise
+            """Get data from the HWAM stove."""
+            url = f"{self._base_url}/get_stove_data"
+            
+            try:
+                async with async_timeout.timeout(15):
+                    async with self._session.get(url) as response:
+                        if response.status == 200:
+                            content_type = response.headers.get('Content-Type', '').split(';')[0]
+                            if content_type in ['application/json', 'text/json', 'text/plain']:
+                                text = await response.text()
+                                data = json.loads(text)
+                                if all(key in data for key in REQUIRED_KEYS):
+                                    return data
+                        _LOGGER.error("Failed to get data. Status: %s", response.status)
+                        return {}
+            except Exception as err:
+                _LOGGER.error("Error getting data: %s", err)
+                raise
+
 
     async def async_validate_connection(self) -> bool:
         """Validate the connection to the HWAM stove."""
