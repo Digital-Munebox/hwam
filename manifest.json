@@ -1,0 +1,12 @@
+{
+    "domain": "hwam",
+    "name": "HWAM Smart Control",
+    "documentation": "https://github.com/Digital-Munebox/hwam",
+    "dependencies": [],
+    "codeowners": ["@Digital-Munebox"],
+    "icon": "custom_components/hwam/icons/hwam_icon.svg",
+    "requirements": [],
+    "iot_class": "local_polling",
+    "version": "1.0.0",
+    "config_flow": true
+}
