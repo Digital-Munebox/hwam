@@ -1,5 +1,4 @@
 """The HWAM integration."""
-import asyncio
 import logging
 from datetime import timedelta
 
@@ -17,13 +16,12 @@ _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR]
 
-async def async_setup(hass: HomeAssistant, config: dict):
+async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up the HWAM component."""
     hass.data[DOMAIN] = {}
-    await async_setup_services(hass)
     return True
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up HWAM from a config entry."""
     session = async_get_clientsession(hass)
     api = HWAMApi(entry.data[CONF_HOST], session)
@@ -46,14 +44,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     }
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    await async_setup_services(hass)
+    
     return True
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
-        api = hass.data[DOMAIN][entry.entry_id]["api"]
-        await api.close()
         hass.data[DOMAIN].pop(entry.entry_id)
-
     return unload_ok
