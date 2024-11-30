@@ -27,11 +27,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     session = async_get_clientsession(hass)
     api = HWAMApi(entry.data[CONF_HOST], session)
 
+    async def async_update_data():
+        """Fetch data from API."""
+        try:
+            return await api.async_get_data()
+        except Exception as err:
+            _LOGGER.error("Error updating HWAM data: %s", err)
+            raise
+
     coordinator = DataUpdateCoordinator(
         hass,
         _LOGGER,
         name=entry.data.get(CONF_NAME, "hwam"),
-        update_method=api.async_get_data,
+        update_method=async_update_data,
         update_interval=timedelta(
             seconds=entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
         ),
