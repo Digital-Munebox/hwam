@@ -55,12 +55,8 @@ class HWAMApi:
 
     async def _process_response(self, response) -> Dict:
         """Process API response."""
-        content_type = response.headers.get('Content-Type', '').split(';')[0]
-        if content_type not in ['application/json', 'text/json', 'text/plain']:
-            raise ValueError(f"Unexpected content type: {content_type}")
-        
-        text = await response.text()
         try:
+            text = await response.text()
             data = json.loads(text)
             return data
         except json.JSONDecodeError as err:
@@ -100,3 +96,5 @@ class HWAMApi:
         except Exception as err:
             _LOGGER.error("Error starting stove: %s", err)
             return False
+
+    # [Les autres méthodes existantes restent inchangées...]
