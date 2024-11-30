@@ -12,10 +12,16 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util.percentage import (
+    percentage_to_ranged_value,
+    ranged_value_to_percentage,
+)
 
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
+
+SPEED_RANGE = (1, 5)  # Min and max burn level
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -33,13 +39,13 @@ class HwamFanControl(CoordinatorEntity, FanEntity):
     """Representation of HWAM fan control."""
 
     _attr_supported_features = FanEntityFeature.SET_SPEED
-    _attr_speed_count = 5
+    should_poll = False
 
     def __init__(self, coordinator, api, device_name):
         """Initialize the fan control."""
         super().__init__(coordinator)
         self._api = api
-        self._attr_name = f"{device_name} burn_level"
+        self._attr_name = f"{device_name} niveau_de_combustion"
         self._attr_unique_id = f"{coordinator.config_entry.entry_id}_burn_level"
         self._attr_has_entity_name = True
         self._attr_icon = "mdi:fire"
@@ -55,19 +61,28 @@ class HwamFanControl(CoordinatorEntity, FanEntity):
         return self.coordinator.data.get("phase") != 5  # 5 = Standby
 
     @property
-    def percentage(self) -> int:
+    def percentage(self) -> int | None:
         """Return the current speed percentage."""
-        burn_level = self.coordinator.data.get("burn_level", 0)
-        return int(burn_level * 20)  # Convert 1-5 to percentage
+        burn_level = self.coordinator.data.get("burn_level")
+        if burn_level is None:
+            return None
+        return ranged_value_to_percentage(SPEED_RANGE, burn_level)
 
     async def async_set_percentage(self, percentage: int) -> None:
         """Set the speed of the fan."""
-        # Convert percentage to burn level (1-5)
-        burn_level = max(1, min(5, int(round(percentage / 20))))
-        await self._api.set_burn_level(burn_level)
-        await self.coordinator.async_request_refresh()
+        if percentage == 0:
+            await self.async_turn_off()
+        else:
+            burn_level = int(percentage_to_ranged_value(SPEED_RANGE, percentage))
+            await self._api.set_burn_level(burn_level)
+            await self.coordinator.async_request_refresh()
 
-    async def async_turn_on(self, percentage: int = None, preset_mode: str = None, **kwargs) -> None:
+    async def async_turn_on(
+        self,
+        percentage: int | None = None,
+        preset_mode: str | None = None,
+        **kwargs: Any,
+    ) -> None:
         """Turn on the fan."""
         if not self.is_on:
             await self._api.start()
