@@ -162,6 +162,9 @@ class HWAMSensor(CoordinatorEntity, SensorEntity):
         if "value_map" in self._config:
             if isinstance(value, list):
                 return ", ".join(self._config["value_map"].get(v, str(v)) for v in value)
+            # Ajout d'une vérification supplémentaire pour la phase
+            if self._sensor_key == "phase" and value not in self._config["value_map"]:
+                return None
             return self._config["value_map"].get(value, value)
             
         return value
