@@ -1,4 +1,5 @@
 """Config flow for HWAM integration."""
+import asyncio
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_SCAN_INTERVAL
@@ -17,6 +18,8 @@ DATA_SCHEMA = vol.Schema({
 })
 
 class HWAMConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+    """Handle a config flow for HWAM."""
+    
     VERSION = 1
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
@@ -29,7 +32,9 @@ class HWAMConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             api = HWAMApi(user_input[CONF_HOST], session)
 
             try:
-                if await api.async_validate_connection():
+                # Tentative de connexion avec la méthode async_get_data
+                data = await api.async_get_data()
+                if data:  # Si des données sont reçues, la connexion est valide
                     return self.async_create_entry(
                         title=user_input[CONF_NAME],
                         data=user_input
@@ -37,8 +42,8 @@ class HWAMConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "cannot_connect"
             except asyncio.TimeoutError:
                 errors["base"] = "timeout"
-            except Exception:
-                _LOGGER.exception("Unexpected error")
+            except Exception as ex:
+                _LOGGER.exception("Unexpected error: %s", ex)
                 errors["base"] = "unknown"
 
         return self.async_show_form(
