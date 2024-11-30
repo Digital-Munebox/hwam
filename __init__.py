@@ -14,7 +14,7 @@ from .services import register_services
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.FAN]
+PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.SELECT]
 
 async def async_setup(hass: HomeAssistant, _) -> bool:
     """Set up HWAM integration."""
