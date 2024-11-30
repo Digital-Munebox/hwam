@@ -23,8 +23,17 @@ DEVICE_INFO = {
 
 # Operation modes
 OPERATION_MODES = {
+    0: "Initialisation",
+    1: "Auto-test",
     2: "Éteint",
+    3: "Défaut température",
+    4: "Défaut O2",
+    5: "Calibration",
+    6: "Sécurité",
+    7: "Manuel",
+    8: "Test moteur",
     9: "En marche",
+    10: "Basse tension"
 }
 
 # Phase states
@@ -34,6 +43,15 @@ PHASE_STATES = {
     3: "Combustion", 
     4: "Braises",
     5: "Veille"
+}
+
+# Night lowering states
+NIGHT_LOWERING_STATES = {
+    0: "Désactivé",
+    1: "Initialisation",
+    2: "Jour",
+    3: "Nuit",
+    4: "Nuit manuel",
 }
 
 # Maintenance alarms
