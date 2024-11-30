@@ -38,7 +38,11 @@ async def async_setup_entry(
 class HwamFanControl(CoordinatorEntity, FanEntity):
     """Representation of HWAM fan control."""
 
-    _attr_supported_features = FanEntityFeature.SET_SPEED
+    _attr_supported_features = (
+        FanEntityFeature.SET_SPEED |
+        FanEntityFeature.TURN_ON |
+        FanEntityFeature.TURN_OFF
+    )
     should_poll = False
 
     def __init__(self, coordinator, api, device_name):
@@ -93,3 +97,8 @@ class HwamFanControl(CoordinatorEntity, FanEntity):
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turning off is not supported - the stove needs to burn out naturally."""
         _LOGGER.warning("Turning off the stove via Home Assistant is not supported for safety reasons.")
+
+    @property
+    def speed_count(self) -> int:
+        """Return the number of speeds the fan supports."""
+        return SPEED_RANGE[1]
