@@ -25,21 +25,31 @@ BINARY_SENSORS = [
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up binary sensors for HWAM."""
     coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
+    device_name = entry.data.get("name", "HWAM").lower().replace(" ", "_")
 
     async_add_entities([
-        HWAMBinarySensor(coordinator, sensor["key"], sensor["name"], sensor["device_class"], sensor.get("icon"))
+        HWAMBinarySensor(
+            coordinator, 
+            sensor["key"], 
+            sensor["name"], 
+            sensor["device_class"], 
+            sensor.get("icon"),
+            device_name
+        )
         for sensor in BINARY_SENSORS
     ])
 
 class HWAMBinarySensor(CoordinatorEntity, BinarySensorEntity):
     """Representation of a HWAM binary sensor."""
 
-    def __init__(self, coordinator, key, name, device_class, icon=None):
+    def __init__(self, coordinator, key, name, device_class, icon, device_name):
         """Initialize the binary sensor."""
         super().__init__(coordinator)
         self._key = key
-        self._attr_name = name
+        self._attr_name = f"{device_name} {name}"
         self._attr_unique_id = f"{coordinator.config_entry.entry_id}_{key}"
+        self._attr_has_entity_name = True
+        self._attr_suggested_object_id = f"{device_name}_{key}"
         self._attr_device_class = device_class
         self._attr_device_info = {
             "identifiers": {(DOMAIN, coordinator.config_entry.entry_id)},
@@ -53,7 +63,6 @@ class HWAMBinarySensor(CoordinatorEntity, BinarySensorEntity):
     def is_on(self):
         """Return true if the binary sensor is on."""
         value = self.coordinator.data.get(self._key)
-        # Conversion des valeurs possibles en booléen
         if isinstance(value, bool):
             return value
         if isinstance(value, (int, float)):
