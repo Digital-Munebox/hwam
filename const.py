@@ -2,7 +2,7 @@
 from homeassistant.const import Platform
 
 DOMAIN = "hwam"
-PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR]
+PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.FAN]
 
 # Default values
 DEFAULT_NAME = "HWAM Poêle"
