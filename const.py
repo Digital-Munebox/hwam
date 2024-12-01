@@ -82,3 +82,13 @@ SAFETY_ALARMS = {
     12: "Alarme manuelle",
     13: "Défaut capteur poêle"
 }
+
+# Combuustion Power
+BURN_LEVELS = {
+    0: "Minimal",
+    1: "Très faible",
+    2: "Faible",
+    3: "Moyen",
+    4: "Fort",
+    5: "Maximum"
+}
