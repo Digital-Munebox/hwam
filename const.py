@@ -38,6 +38,7 @@ OPERATION_MODES = {
 
 # Phase states
 PHASE_STATES = {
+    0: "Allumage initial",
     1: "Allumage",
     2: "Démarrage",
     3: "Combustion", 
