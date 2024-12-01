@@ -10,11 +10,9 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN
+from .const import DOMAIN, BURN_LEVELS
 
 _LOGGER = logging.getLogger(__name__)
-
-BURN_LEVELS = ["1", "2", "3", "4", "5"]
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -39,7 +37,7 @@ class HwamBurnLevelControl(CoordinatorEntity, SelectEntity):
         self._attr_unique_id = f"{coordinator.config_entry.entry_id}_burn_level"
         self._attr_has_entity_name = True
         self._attr_icon = "mdi:fire"
-        self._attr_options = BURN_LEVELS
+        self._attr_options = list(map(str, range(6)))  # "0" à "5"
         self._attr_device_info = {
             "identifiers": {(DOMAIN, coordinator.config_entry.entry_id)},
             "name": coordinator.config_entry.data.get("name", "HWAM Stove"),
