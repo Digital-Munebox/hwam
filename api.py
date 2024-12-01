@@ -75,7 +75,7 @@ class HWAMApi:
             _LOGGER.error("Error getting data: %s", err)
             raise
 
-async def set_burn_level(self, level: int) -> bool:
+    async def set_burn_level(self, level: int) -> bool:
         """Set the burn level (0-5)."""
         if not 0 <= level <= 5:
             raise ValueError("Burn level must be between 0 and 5")
@@ -96,5 +96,3 @@ async def set_burn_level(self, level: int) -> bool:
         except Exception as err:
             _LOGGER.error("Error starting stove: %s", err)
             return False
-
-    # [Les autres méthodes existantes restent inchangées...]
