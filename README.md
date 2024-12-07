@@ -6,16 +6,17 @@ Cette intégration personnalisée permet de contrôler et surveiller les poêles
 
 Cette intégration ajoute les fonctionnalités suivantes à Home Assistant :
 
-- **Contrôle de puissance** : Contrôlez la puissance de combustion (niveaux 1-5) via une entité fan
+- **Contrôle de puissance** : Contrôlez la puissance de combustion (niveaux 0-5) via une liste déroulante
+- **Démarrage** : Bouton de démarrage du poêle
 - **Capteurs** :
   - Température du poêle
   - Température ambiante
   - Niveau d'oxygène
   - Position des valves
   - État du poêle (phases et modes)
-  - Alarmes de maintenance et de sécurité
-- **Mode nuit** : Configuration et contrôle du mode nuit
-- **Alarmes** : Surveillance des alarmes de remplissage et de sécurité
+  - Temps avant rechargement
+  - Date de maintenance
+  - Alarmes (maintenance, sécurité et remplissage)
 
 ## Installation
 
@@ -34,87 +35,104 @@ L'intégration nécessite :
 
 ## Entités
 
-### Fan
-- `fan.hwam_burn_level`: Contrôle de la puissance de combustion (niveaux 1-5)
+### Bouton
+- `button.hwam_start`: Démarrage du poêle
+
+### Sélecteur
+- `select.hwam_niveau_de_combustion`: Contrôle de la puissance (niveaux 0-5)
 
 ### Capteurs
-- `sensor.hwam_stove_temperature`: Température du poêle (°C)
-- `sensor.hwam_room_temperature`: Température ambiante (°C)
-- `sensor.hwam_oxygen_level`: Niveau d'oxygène (%)
-- `sensor.hwam_operation_mode`: Mode de fonctionnement
+- `sensor.hwam_temperature_du_poele`: Température du poêle (°C)
+- `sensor.hwam_temperature_ambiante`: Température ambiante (°C)
+- `sensor.hwam_niveau_d_oxygene`: Niveau d'oxygène (%)
+- `sensor.hwam_mode_de_fonctionnement`: Mode de fonctionnement
 - `sensor.hwam_phase`: Phase actuelle
 - `sensor.hwam_valve1_position`: Position valve 1 (%)
 - `sensor.hwam_valve2_position`: Position valve 2 (%)
 - `sensor.hwam_valve3_position`: Position valve 3 (%)
+- `sensor.hwam_time_to_refill`: Temps avant rechargement
 - `sensor.hwam_refill_alarm`: Alarme de remplissage
 - `sensor.hwam_maintenance_alarms`: Alarmes maintenance
 - `sensor.hwam_safety_alarms`: Alarmes sécurité
+- `sensor.hwam_service_date`: Date de maintenance
 
-### Capteurs binaires
-- `binary_sensor.hwam_door_open`: État de la porte
-- `binary_sensor.hwam_night_mode`: État du mode nuit
+## Carte suggérée
 
-## Services
-
-### Mode nuit
-- `hwam.set_night_mode_hours`: Configure les heures du mode nuit
-  ```yaml
-  service: hwam.set_night_mode_hours
-  data:
-    device_id: "votre_device_id"
-    start_time: "23:00"
-    end_time: "06:00"
-  ```
-
-- `hwam.enable_night_mode`: Active le mode nuit
-  ```yaml
-  service: hwam.enable_night_mode
-  data:
-    device_id: "votre_device_id"
-  ```
-
-- `hwam.disable_night_mode`: Désactive le mode nuit
-  ```yaml
-  service: hwam.disable_night_mode
-  data:
-    device_id: "votre_device_id"
-  ```
-
-## Cartes suggérées
-
-### Carte de contrôle principal
 ```yaml
 type: vertical-stack
 cards:
-  - type: entities
-    title: "HWAM Poêle"
-    entities:
-      - entity: fan.hwam_burn_level
-        name: "Puissance"
-      - entity: sensor.hwam_stove_temperature
-      - entity: sensor.hwam_room_temperature
-      - entity: sensor.hwam_oxygen_level
-      - entity: sensor.hwam_phase
-      - entity: binary_sensor.hwam_night_mode
+  # En-tête avec état principal
+  - type: custom:mushroom-title-card
+    title: HWAM Poêle à bois
   
   - type: horizontal-stack
     cards:
-      - type: gauge
-        entity: sensor.hwam_valve1_position
-        name: "Valve 1"
-        min: 0
-        max: 100
-      - type: gauge
-        entity: sensor.hwam_valve2_position
-        name: "Valve 2"
-        min: 0
-        max: 100
-      - type: gauge
-        entity: sensor.hwam_valve3_position
-        name: "Valve 3"
-        min: 0
-        max: 100
+      - type: custom:mushroom-template-card
+        primary: "{{ states('sensor.hwam_phase') }}"
+        secondary: Phase
+        icon: mdi:fire
+        icon_color: >-
+          {% if states('sensor.hwam_phase') == 'Combustion' %}
+            red
+          {% elif states('sensor.hwam_phase') == 'Braises' %}
+            orange
+          {% elif states('sensor.hwam_phase') == 'Veille' %}
+            gray
+          {% else %}
+            amber
+          {% endif %}
+      
+      - type: custom:mushroom-button-card
+        entity: button.hwam_start
+        icon: mdi:power
+        icon_color: >-
+          {% if states('sensor.hwam_phase') != 'Veille' %}
+            red
+          {% else %}
+            green
+          {% endif %}
+
+      - type: custom:mushroom-select-card
+        entity: select.hwam_hwam_niveau_de_combustion
+        icon: mdi:fire-circle
+        icon_color: amber
+
+  # Températures et oxygène
+  - type: horizontal-stack
+    cards:
+      - type: custom:mushroom-template-card
+        primary: "{{ states('sensor.hwam_temperature_du_poele') }}°C"
+        secondary: Poêle
+        icon: mdi:thermometer
+        icon_color: red
+        
+      - type: custom:mushroom-template-card
+        primary: "{{ states('sensor.hwam_temperature_ambiante') }}°C"
+        secondary: Pièce
+        icon: mdi:home-thermometer
+        icon_color: blue
+        
+      - type: custom:mushroom-template-card
+        primary: "{{ states('sensor.hwam_niveau_d_oxygene') }}%"
+        secondary: O₂
+        icon: mdi:gas-cylinder
+        icon_color: cyan
+        
+  # Graphique
+  - type: custom:plotly-graph
+    entities:
+      - entity: sensor.hwam_temperature_du_poele
+      - entity: sensor.hwam_niveau_d_oxygene
+      - entity: sensor.sonde_salon_temperature
+    hours_to_show: 8
+    refresh_interval: 10
+    title: Températures et Oxygène
 ```
+
+## Dépendance cartes personnalisées
+Cette intégration nécessite les cartes personnalisées suivantes (HACS) :
+- mushroom-cards
+- plotly-graph-card
 
 ## Dépannage
 
@@ -128,16 +146,6 @@ cards:
 - Augmentez l'intervalle d'actualisation si nécessaire
 - Vérifiez les logs de Home Assistant pour plus de détails
 
-## Aide et Support
-
-Si vous rencontrez des problèmes :
-1. Vérifiez les logs de Home Assistant
-2. Ouvrez une issue sur GitHub avec :
-   - La description du problème
-   - Les logs pertinents
-   - Votre configuration
-   - Les étapes pour reproduire le problème
-
 ## Licence
 
-Ce projet est sous licence MIT. Voir le fichier LICENSE pour plus de détails.
+Ce projet est sous licence MIT.
