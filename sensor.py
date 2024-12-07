@@ -1,12 +1,12 @@
 """Support for HWAM sensors."""
 from typing import Any
-from datetime import datetime, timedelta
+from datetime import datetime
 from homeassistant.components.sensor import (
     SensorEntity,
     SensorDeviceClass,
     SensorStateClass,
 )
-from homeassistant.const import UnitOfTemperature, PERCENTAGE
+from homeassistant.const import UnitOfTemperature, PERCENTAGE, UnitOfTime
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -115,6 +115,8 @@ SENSORS = {
         "name": "Temps avant rechargement",
         "icon": "mdi:timer-sand",
         "device_class": SensorDeviceClass.DURATION,
+        "state_class": SensorStateClass.MEASUREMENT,
+        "unit": UnitOfTime.SECONDS,
     },
 }
 
@@ -154,11 +156,7 @@ class HWAMSensor(CoordinatorEntity, SensorEntity):
         if self._sensor_key == "time_to_refill":
             hours = self.coordinator.data.get("new_fire_wood_hours", 0)
             minutes = self.coordinator.data.get("new_fire_wood_minutes", 0)
-            total_minutes = hours * 60 + minutes
-            if total_minutes == 0:
-                return "0 min"
-            td = timedelta(minutes=total_minutes)
-            return str(td)
+            return hours * 3600 + minutes * 60
             
         value = self.coordinator.data.get(self._sensor_key)
         if value is None:
