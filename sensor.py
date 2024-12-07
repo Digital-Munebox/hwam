@@ -59,7 +59,9 @@ SENSORS = {
         "name": "Mode de fonctionnement",
         "icon": "mdi:cog",
         "device_class": SensorDeviceClass.ENUM,
-        "options": ["Éteint", "En marche"],
+        "options": ["Initialisation", "Auto-test", "Éteint", "Défaut température", 
+                   "Défaut O2", "Calibration", "Sécurité", "Manuel", "Test moteur", 
+                   "En marche", "Basse tension"],
         "value_map": {
             0: "Initialisation",
             1: "Auto-test",
