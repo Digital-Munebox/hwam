@@ -1,6 +1,6 @@
 """Support for HWAM sensors."""
 from typing import Any
-from datetime import datetime
+from datetime import datetime, timedelta
 from homeassistant.components.sensor import (
     SensorEntity,
     SensorDeviceClass,
@@ -151,6 +151,15 @@ class HWAMSensor(CoordinatorEntity, SensorEntity):
     @property
     def native_value(self) -> Any:
         """Return the sensor value."""
+        if self._sensor_key == "time_to_refill":
+            hours = self.coordinator.data.get("new_fire_wood_hours", 0)
+            minutes = self.coordinator.data.get("new_fire_wood_minutes", 0)
+            total_minutes = hours * 60 + minutes
+            if total_minutes == 0:
+                return "0 min"
+            td = timedelta(minutes=total_minutes)
+            return str(td)
+            
         value = self.coordinator.data.get(self._sensor_key)
         if value is None:
             return None
