@@ -2,6 +2,7 @@
 from homeassistant.core import HomeAssistant, ServiceCall
 import voluptuous as vol
 from homeassistant.helpers import config_validation as cv
+from datetime import datetime, time
 from .const import DOMAIN, ATTR_START_TIME, ATTR_END_TIME, CONF_DEVICE_ID
 
 TIME_SCHEMA = vol.Schema({
@@ -19,13 +20,13 @@ def register_services(hass: HomeAssistant) -> None:
     
     async def set_night_mode_hours(call: ServiceCall) -> None:
         """Handle set_night_mode_hours service."""
+        start_time = call.data[ATTR_START_TIME]
+        end_time = call.data[ATTR_END_TIME]
+
         for entry_id in hass.data[DOMAIN]:
             coordinator = hass.data[DOMAIN][entry_id]["coordinator"]
             api = hass.data[DOMAIN][entry_id]["api"]
-            await api.set_night_mode_hours(
-                call.data[ATTR_START_TIME],
-                call.data[ATTR_END_TIME]
-            )
+            await api.set_night_mode_hours(start_time, end_time)
             await coordinator.async_request_refresh()
 
     async def enable_night_mode(call: ServiceCall) -> None:
