@@ -1,4 +1,4 @@
-# Fichier à placer dans custom_components/hwam/services.yaml
+# Services pour l'intégration HWAM
 set_night_mode_hours:
   name: Configurer les heures du mode nuit
   description: Configure les heures de début et de fin du mode nuit
