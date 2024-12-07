@@ -61,8 +61,17 @@ SENSORS = {
         "device_class": SensorDeviceClass.ENUM,
         "options": ["Éteint", "En marche"],
         "value_map": {
+            0: "Initialisation",
+            1: "Auto-test",
             2: "Éteint",
+            3: "Défaut température",
+            4: "Défaut O2",
+            5: "Calibration",
+            6: "Sécurité",
+            7: "Manuel",
+            8: "Test moteur",
             9: "En marche",
+            10: "Basse tension"
         },
     },
     "phase": {
