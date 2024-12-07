@@ -9,15 +9,6 @@ from typing import Dict, Optional
 
 _LOGGER = logging.getLogger(__name__)
 
-REQUIRED_KEYS = {
-    "operation_mode",
-    "stove_temperature", 
-    "room_temperature",
-    "oxygen_level",
-    "burn_level",
-    "phase"
-}
-
 class HWAMApi:
     def __init__(self, host: str, session: aiohttp.ClientSession):
         """Initialize the API client."""
@@ -30,6 +21,8 @@ class HWAMApi:
     async def _api_request(self, method: str, endpoint: str, data: Dict = None) -> Dict:
         """Make an API request with retry mechanism."""
         url = f"{self._base_url}{endpoint}"
+        _LOGGER.debug("Making %s request to %s with data: %s", method, url, data)
+        
         for attempt in range(self._retry_count):
             try:
                 async with async_timeout.timeout(15):
@@ -57,29 +50,29 @@ class HWAMApi:
         """Process API response."""
         try:
             text = await response.text()
+            _LOGGER.debug("Raw response text: %s", text)
             data = json.loads(text)
             return data
         except json.JSONDecodeError as err:
-            raise ValueError(f"Invalid JSON response: {err}")
+            _LOGGER.error("Invalid JSON response: %s", err)
+            return {}
             
     async def async_get_data(self) -> Dict:
         """Get data from the HWAM stove."""
         try:
-            _LOGGER.debug("Fetching data from %s/get_stove_data", self._base_url)
+            _LOGGER.debug("Fetching data from stove")
             data = await self._api_request("GET", "/get_stove_data")
-            if not data:
-                _LOGGER.error("No data received from stove")
-                return {}
-            _LOGGER.debug("Received data: %s", data)
+            _LOGGER.debug("Received data from stove: %s", data)
             return data
         except Exception as err:
-            _LOGGER.error("Error getting data: %s", err)
-            raise
+            _LOGGER.error("Error getting data from stove: %s", err)
+            return {}
 
     async def set_burn_level(self, level: int) -> bool:
         """Set the burn level (0-5)."""
         if not 0 <= level <= 5:
-            raise ValueError("Burn level must be between 0 and 5")
+            _LOGGER.error("Invalid burn level: %s (must be between 0 and 5)", level)
+            return False
         
         try:
             data = {"level": level}
@@ -96,4 +89,30 @@ class HWAMApi:
             return response.get("response") == "OK"
         except Exception as err:
             _LOGGER.error("Error starting stove: %s", err)
+            return False
+
+    async def set_night_mode(self, enabled: bool) -> bool:
+        """Enable or disable night mode."""
+        try:
+            response = await self._api_request(
+                "POST", 
+                "/set_night_mode",
+                {"enabled": enabled}
+            )
+            return response.get("response") == "OK"
+        except Exception as err:
+            _LOGGER.error("Error setting night mode: %s", err)
+            return False
+
+    async def set_night_mode_hours(self, start_time: time, end_time: time) -> bool:
+        """Set night mode hours."""
+        try:
+            data = {
+                "start_time": start_time.strftime("%H:%M"),
+                "end_time": end_time.strftime("%H:%M")
+            }
+            response = await self._api_request("POST", "/set_night_mode_hours", data)
+            return response.get("response") == "OK"
+        except Exception as err:
+            _LOGGER.error("Error setting night mode hours: %s", err)
             return False
