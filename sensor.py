@@ -111,13 +111,10 @@ SENSORS = {
         "device_class": SensorDeviceClass.DATE,
         "entity_category": EntityCategory.DIAGNOSTIC,
     },
-    "new_fire_wood_hours": {
-        "name": "Heures avant rechargement",
+    "time_to_refill": {
+        "name": "Temps avant rechargement",
         "icon": "mdi:timer-sand",
-    },
-    "new_fire_wood_minutes": {
-        "name": "Minutes avant rechargement",
-        "icon": "mdi:timer-sand",
+        "device_class": SensorDeviceClass.DURATION,
     },
 }
 
