@@ -61,16 +61,17 @@ class HWAMApi:
             return data
         except json.JSONDecodeError as err:
             raise ValueError(f"Invalid JSON response: {err}")
-
+            
     async def async_get_data(self) -> Dict:
         """Get data from the HWAM stove."""
         try:
+            _LOGGER.debug("Fetching data from %s/get_stove_data", self._base_url)
             data = await self._api_request("GET", "/get_stove_data")
             if not data:
                 _LOGGER.error("No data received from stove")
                 return {}
             _LOGGER.debug("Received data: %s", data)
-            return data  # Retourne toutes les données sans vérification des clés requises
+            return data
         except Exception as err:
             _LOGGER.error("Error getting data: %s", err)
             raise
