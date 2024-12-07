@@ -66,11 +66,11 @@ class HWAMApi:
         """Get data from the HWAM stove."""
         try:
             data = await self._api_request("GET", "/get_stove_data")
-            if all(key in data for key in REQUIRED_KEYS):
-                return data
-            missing_keys = REQUIRED_KEYS - set(data.keys())
-            _LOGGER.error("Missing required keys in response: %s", missing_keys)
-            return {}
+            if not data:
+                _LOGGER.error("No data received from stove")
+                return {}
+            _LOGGER.debug("Received data: %s", data)
+            return data  # Retourne toutes les données sans vérification des clés requises
         except Exception as err:
             _LOGGER.error("Error getting data: %s", err)
             raise
