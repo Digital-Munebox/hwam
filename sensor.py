@@ -157,25 +157,37 @@ class HWAMSensor(CoordinatorEntity, SensorEntity):
         value = self.coordinator.data.get(self._sensor_key)
         if value is None:
             return None
-
+    
         if self._sensor_key == "service_date" and isinstance(value, str):
             try:
                 return datetime.strptime(value, "%Y-%m-%d").date()
             except ValueError:
                 return None
-
+    
         if "divide_by" in self._config:
             try:
                 return round(float(value) / self._config["divide_by"], 1)
             except (ValueError, TypeError):
                 return None
-
+    
         if "value_map" in self._config:
+            # Gestion spéciale pour les alarmes
+            if self._sensor_key in ["maintenance_alarms", "safety_alarms"]:
+                if value == 0:
+                    return ""
+                alarms = []
+                for bit, alarm_text in self._config["value_map"].items():
+                    if value & (1 << bit):
+                        alarms.append(alarm_text)
+                return ", ".join(alarms) if alarms else ""
+                
             if isinstance(value, list):
                 return ", ".join(self._config["value_map"].get(v, str(v)) for v in value)
-            # Ajout d'une vérification supplémentaire pour la phase
+            
+            # Ajout d'une vérification pour la phase
             if self._sensor_key == "phase" and value not in self._config["value_map"]:
                 return None
+            
             return self._config["value_map"].get(value, value)
             
         return value
