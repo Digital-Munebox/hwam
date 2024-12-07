@@ -37,7 +37,9 @@ class HwamBurnLevelControl(CoordinatorEntity, SelectEntity):
         self._attr_unique_id = f"{coordinator.config_entry.entry_id}_burn_level"
         self._attr_has_entity_name = True
         self._attr_icon = "mdi:fire"
-        self._attr_options = list(map(str, range(6)))  # "0" à "5"
+        # Utilise les labels définis dans BURN_LEVELS
+        self._attr_options = list(BURN_LEVELS.values())
+        self._burn_levels_reverse = {v: k for k, v in BURN_LEVELS.items()}
         self._attr_device_info = {
             "identifiers": {(DOMAIN, coordinator.config_entry.entry_id)},
             "name": coordinator.config_entry.data.get("name", "HWAM Stove"),
@@ -50,9 +52,11 @@ class HwamBurnLevelControl(CoordinatorEntity, SelectEntity):
         burn_level = self.coordinator.data.get("burn_level")
         if burn_level is None:
             return None
-        return str(burn_level)
+        return BURN_LEVELS.get(burn_level, str(burn_level))
 
     async def async_select_option(self, option: str) -> None:
         """Change the burn level."""
-        await self._api.set_burn_level(int(option))
-        await self.coordinator.async_request_refresh()
+        level = self._burn_levels_reverse.get(option)
+        if level is not None:
+            await self._api.set_burn_level(level)
+            await self.coordinator.async_request_refresh()
